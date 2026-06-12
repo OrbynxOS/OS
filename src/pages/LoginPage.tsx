@@ -1,17 +1,34 @@
+import { useState } from "react";
 import { SignInPage } from "@/components/ui/sign-in";
+import { validateCredentials } from "@/lib/auth";
 
-export function LoginPage() {
+interface LoginPageProps {
+  onLoginSuccess: (username: string) => void;
+}
+
+export function LoginPage({ onLoginSuccess }: LoginPageProps) {
+  const [error, setError] = useState("");
+
   const handleSignIn = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const data = Object.fromEntries(formData.entries());
-    console.log("Sign In submitted:", data);
+    const username = String(formData.get("username") ?? "");
+    const password = String(formData.get("password") ?? "");
+
+    if (validateCredentials(username, password)) {
+      setError("");
+      onLoginSuccess(username);
+      return;
+    }
+
+    setError("Invalid username or password. Please try again.");
   };
 
   return (
     <div className="bg-background text-foreground">
       <SignInPage
         brandName="OrbynexOS"
+        error={error}
         title={
           <>
             <span className="font-light tracking-tighter">Welcome to </span>
@@ -20,9 +37,6 @@ export function LoginPage() {
         }
         description="Sign in to access classes, assignments, grades, and school announcements — for students, teachers, and families."
         onSignIn={handleSignIn}
-        onGoogleSignIn={() => console.log("Google sign-in")}
-        onResetPassword={() => console.log("Reset password")}
-        onCreateAccount={() => console.log("Create account")}
       />
     </div>
   );
